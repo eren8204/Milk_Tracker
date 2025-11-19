@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primaryDark">#1976D2</color>
+    <color name="card_background_selected">#E3F2FD</color>
+    <color name="day_number">#757575</color>
+    <color name="day_amount">#9E9E9E</color>
+    <color name="success">#4CAF50</color>
+    <color name="card_background">#F8F9FA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="onSurface">#333333</color>
+    <color name="primary">#2196F3</color>
+    <color name="background">#F5F5F5</color>
+</resources>
