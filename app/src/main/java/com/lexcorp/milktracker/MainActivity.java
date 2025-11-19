@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -245,11 +246,25 @@ public class MainActivity extends AppCompatActivity {
         private final List<Integer> days;
         private final int firstDayOfWeek;
         private final int totalDays;
+        private final int today; // Add today variable
 
         public CalendarAdapter() {
             totalDays = getDaysInMonth();
             firstDayOfWeek = getFirstDayOfWeek();
             days = new ArrayList<>();
+
+            // Get today's date
+            Calendar currentCalendar = Calendar.getInstance();
+            int currentYear = currentCalendar.get(Calendar.YEAR);
+            int currentMonth = currentCalendar.get(Calendar.MONTH);
+            int currentDay = currentCalendar.get(Calendar.DAY_OF_MONTH);
+
+            // Check if we're viewing the current month and year
+            if (currentYear == MainActivity.this.currentYear && currentMonth == MainActivity.this.currentMonth) {
+                today = currentDay;
+            } else {
+                today = -1; // Not the current month
+            }
 
             // Add empty cells for days before the first day of month
             for (int i = 0; i < firstDayOfWeek; i++) {
@@ -292,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
             ViewHolder holder = new ViewHolder(convertView);
 
             if (day > 0 && position < days.size()) {
-                holder.bind(day);
+                holder.bind(day, today); // Pass today to bind method
             } else {
                 holder.bindEmpty();
             }
@@ -316,13 +331,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @SuppressLint("SetTextI18n")
-        public void bind(int day) {
+        public void bind(int day, int today) { // Add today parameter
             this.day = day;
             dayNumber.setText(String.valueOf(day));
             dayNumber.setVisibility(View.VISIBLE);
             dayAmount.setVisibility(View.VISIBLE);
             dayCard.setEnabled(true);
             dayCard.setClickable(true);
+
+            // Reset text color to default first
+            dayNumber.setTextColor(getColor(R.color.day_number));
+
+            // Highlight today's date
+            if (day == today) {
+                dayNumber.setTextColor(getColor(R.color.primary));
+                dayNumber.setTextSize(18); // Make today's number slightly larger
+                dayNumber.setTypeface(dayNumber.getTypeface(), Typeface.BOLD);
+            } else {
+                dayNumber.setTextSize(16);
+                dayNumber.setTypeface(dayNumber.getTypeface(), Typeface.NORMAL);
+            }
 
             // Check if milk was purchased this day
             String monthKey = getMonthKey();
@@ -335,10 +363,24 @@ public class MainActivity extends AppCompatActivity {
                     dayAmount.setText("₹" + decimalFormat.format(amount));
                     dayCard.setCardBackgroundColor(getColor(R.color.card_background_selected));
                     checkIcon.setVisibility(View.VISIBLE);
+
+                    // If it's today and has milk purchased, make it more prominent
+                    if (day == today) {
+                        dayCard.setStrokeColor(getColor(R.color.primary));
+                        dayCard.setStrokeWidth(2);
+                    }
                 } else {
                     dayAmount.setText("₹0");
                     dayCard.setCardBackgroundColor(getColor(R.color.card_background));
                     checkIcon.setVisibility(View.GONE);
+
+                    // Reset stroke for today if no milk purchased
+                    if (day == today) {
+                        dayCard.setStrokeColor(getColor(R.color.primary));
+                        dayCard.setStrokeWidth(2);
+                    } else {
+                        dayCard.setStrokeWidth(0);
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -355,6 +397,7 @@ public class MainActivity extends AppCompatActivity {
             dayCard.setCardElevation(0f);
             dayCard.setEnabled(false);
             dayCard.setClickable(false);
+            dayCard.setStrokeWidth(0); // Remove stroke for empty cells
         }
 
         private void setupClickListeners() {
